@@ -433,15 +433,8 @@ function ROI_informations(hObject, eventdata, handles)
 Answers = inputdlg({'Q1: ROI Name?',...
             'Q2: Number of cells followed?','Q3: Description?'},'ROI informations', [1 1 3]);
 [name, nb, descr] = Answers{:};
-disp(name);
-disp(nb);
-disp(descr);
-
-% 
- oldData = get(handles.ROI, 'Data');
- disp(oldData);
-
- newData = [oldData; [{name},{nb},{descr}]];
-
+oldData = get(handles.ROI, 'Data');
+disp(oldData);
+newData = [oldData; [{name},{nb},{descr}]];
 % set (handles.ROI, 'Data',name,nb,descr);
-set (handles.ROI, 'Data',newData);
+set(handles.ROI, 'Data',newData);
