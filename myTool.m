@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 05-Oct-2015 11:31:41
+% Last Modified by GUIDE v2.5 05-Oct-2015 16:57:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -407,6 +407,17 @@ guidata(hObject,handles);
 xl  = xlim;
 disp(xl);
 
+% Construct a questdlg with three options
+choice = questdlg('Do you want to save this ROI?',...
+      'Validation',...
+      'Yes','No','Yes');
+switch choice, 
+    case 'Yes',
+        ROI_informations(hObject, eventdata, handles)
+
+     case 'No'
+        uipushtool3_ClickedCallback(hObject, eventdata, handles)
+end
 
 % --------------------------------------------------------------------
 function uipushtool3_ClickedCallback(hObject, eventdata, handles)
@@ -416,3 +427,21 @@ function uipushtool3_ClickedCallback(hObject, eventdata, handles)
 handles.Zoom = handles.originalZoom;
 guidata(hObject,handles);
 slider_Callback(hObject, eventdata, handles);   
+
+function ROI_informations(hObject, eventdata, handles)
+
+Answers = inputdlg({'Q1: ROI Name?',...
+            'Q2: Number of cells followed?','Q3: Description?'},'ROI informations', [1 1 3]);
+[name, nb, descr] = Answers{:};
+disp(name);
+disp(nb);
+disp(descr);
+
+% 
+ oldData = get(handles.ROI, 'Data');
+ disp(oldData);
+
+ newData = [oldData; [{name},{nb},{descr}]];
+
+% set (handles.ROI, 'Data',name,nb,descr);
+set (handles.ROI, 'Data',newData);
