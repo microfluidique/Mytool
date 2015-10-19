@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 05-Oct-2015 16:57:03
+% Last Modified by GUIDE v2.5 08-Oct-2015 16:08:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -350,7 +350,6 @@ function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-
 if strcmp(eventdata.Key,'d')
   
    bud_Callback(hObject, eventdata, handles);
@@ -398,20 +397,20 @@ set(handles.Zoom,'ActionPostCallback',{@mouseFcn,handles});
 guidata(hObject,handles);
 
 
+
 function mouseFcn(hObject, eventdata, handles)
 
 zoom = axis(handles.axes1);
+disp('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+disp(zoom);
 handles.Zoom = zoom;
-
 guidata(hObject,handles);
-xl  = xlim;
-disp(xl);
 
 % Construct a questdlg with three options
 choice = questdlg('Do you want to save this ROI?',...
       'Validation',...
       'Yes','No','Yes');
-switch choice, 
+switch choice,
     case 'Yes',
         ROI_informations(hObject, eventdata, handles)
 
@@ -419,7 +418,9 @@ switch choice,
         uipushtool3_ClickedCallback(hObject, eventdata, handles)
 end
 
-% --------------------------------------------------------------------
+set(handles.uitoggletool1, 'State', 'off');
+
+% -------------------------------------------------------------------
 function uipushtool3_ClickedCallback(hObject, eventdata, handles)
 % hObject    handle to uipushtool3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -430,11 +431,40 @@ slider_Callback(hObject, eventdata, handles);
 
 function ROI_informations(hObject, eventdata, handles)
 
-Answers = inputdlg({'Q1: ROI Name?',...
-            'Q2: Number of cells followed?','Q3: Description?'},'ROI informations', [1 1 3]);
+Answers = inputdlg({'ROI Name?',...
+            'Number of cells followed?','Description?'},'ROI informations', [1 1 3]);
 [name, nb, descr] = Answers{:};
 oldData = get(handles.ROI, 'Data');
-disp(oldData);
-newData = [oldData; [{name},{nb},{descr}]];
+
+ax=handles.Zoom;
+
+newData = [oldData; [{name},{nb},{descr} ,{ax(1)},{ax(2)},{ax(3)} ,{ax(4)}]];
 % set (handles.ROI, 'Data',name,nb,descr);
+% handles.ROI = newData;
+% guidata(hObject,handles);
 set(handles.ROI, 'Data',newData);
+
+
+function events_manage(hObject, eventdata, handles)
+
+Answers = inputdlg({' Number of events ?'},'ROI informations', [1]);
+
+% --- Executes when selected cell(s) is changed in ROI.
+function ROI_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to ROI (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+row = eventdata.Indices;
+disp('row');
+disp(row(1));
+row = row(1);
+data=get(handles.ROI,'Data');
+disp(data);
+axa= data(row(1),4);
+axb=data(row(1),5);
+axc=data(row(1),6);
+axd=data(row(1),7);
+handles.Zoom =[ cell2mat(axa(1)), cell2mat(axb(1)), cell2mat(axc(1)), cell2mat(axd(1))]; 
+guidata(hObject,handles);
+slider_Callback(hObject, eventdata, handles);  
