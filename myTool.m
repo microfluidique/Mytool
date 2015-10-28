@@ -54,7 +54,8 @@ function myTool_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for myTool
 handles.output = hObject;
-
+handles.number = 0;
+handles.allData= struct;
 % Update handles structure
 guidata(hObject, handles);
 
@@ -166,13 +167,10 @@ set(handles.nbFrame, 'String',round(value));
 %      moi = 'fff';
 % else
 zoom reset;
-ax=floor(handles.Zoom); 
+ax=handles.Zoom; 
 img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
 
-     
-
-    
-
+  
 imshow(img);
 drawnow;
    
@@ -268,45 +266,65 @@ handles.originalZoom = zoom;
 guidata(hObject,handles);
 % --- Executes on button press in bud.
 
-function bud_Callback(hObject, eventdata, handles)
-table = handles.data;
+function event_Callback(hObject, eventdata, handles,event_number ,selected_row )
+
+allData = handles.allData;
+%allData(selected_row).events{event_number}{3} = {table};
 value  = get(handles.slider, 'Value');
-if table(round(value)) == 1
-    table(round(value)) = 0;
-else
-    table(round(value)) = 1;
-end
 
-handles.data = table;
+class(allData(selected_row).events{event_number}{3})
+disp('lologl');
+ disp(allData(selected_row).events{event_number}{3}(1));
+
+ if allData(selected_row).events{event_number}{3}(round(value)) == 1
+     allData(selected_row).events{event_number}{3}(round(value)) = 0;
+     
+     disp(round(value));
+     disp(allData(selected_row).events{event_number}{3}(round(value)));
+ else
+     allData(selected_row).events{event_number}{3}(round(value)) = 1;
+     disp(round(value));
+     disp(allData(selected_row).events{event_number}{3}(round(value)));
+ end
+handles.allData = allData;
 guidata(hObject,handles);
-nbFrames = getappdata(handles.start , 'int');
-x = [1:nbFrames];
-table = handles.data;
-save('results','table');
-y = table;
-plot(handles. axes3, x, y);
-% set (handles.uitable1, 'Data', [4444,6666666]);
-oldData = get(handles.uitable1, 'Data');
-disp(oldData);
-newData = [oldData; [round(value),table(round(value))]];
-newDataExtract = newData(end-4:end, :)  % 5 derniers elements
-disp(newDataExtract);
-set (handles.uitable1, 'Data', newDataExtract);
+% handles.data = table;
+% guidata(hObject,handles);
+ nbFrames = getappdata(handles.start , 'int');
+ x = [1:nbFrames];
+% table = handles.data;
+% save('results','table');
+
+%  y = allData(1).events{1}{3};
+%  
+%   y2 = allData(1).events{2}{3};
+% plot(handles.axes3, x,y,  x, y2 ); 
+
+%  plot(handles.axes3, x, y2);
+
  
-%  set (popo, 'Data', [value,table(round(value))]);
+ 
+ 
+%   dataPlot =[  y  y2];
+ 
+%  
+ nbEvents = allData(selected_row).nbEvents;
+ nbEvents = str2double(nbEvents);
+ dataPlot= [];
+ legends= [];
+ for j=1:nbEvents
+      dataPlot = [dataPlot allData(selected_row).events{j}{3}];
+      legends = [legends ; allData(selected_row).events{j}{1}];
+     
+ end
+ 
+ 
+  disp('dataPlot');
+  disp(dataPlot);
+  plot(handles.axes3, dataPlot);
 
-
-% button = questdlg('Do you want to continue?',...
-% 'Continue Operation','Yes','No','Help','No');
-% if strcmp(button,'Yes')
-%    disp('Creating file')
-% elseif strcmp(button,'No')
-%    disp('Canceled file operation')
-% elseif strcmp(button,'Help')
-%    disp('Sorry, no help available')
-% end
-%
-
+  legend(handles.axes3 , legends);
+    
 % --- Executes on button press in bud.
 function file_Callback(hObject, eventdata, handles)
 % hObject    handle to bud (see GCBO)
@@ -350,11 +368,22 @@ function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-if strcmp(eventdata.Key,'d')
-  
-   bud_Callback(hObject, eventdata, handles);
-  
+allData = handles.allData;
+selected_row  = handles.selected_row  ; 
+nbEvents = allData(selected_row).nbEvents;
+nbEvents = str2double(nbEvents);
+for k=1:nbEvents
+    if strcmp(eventdata.Key,allData(selected_row).events{k}{2})
+        event_Callback(hObject, eventdata, handles, k ,selected_row );
+    end
 end
+
+
+
+
+
+
+
 % valueSlider  = get(handles.slider, 'Value');
 % 
 %  switch(eventdata.Key)
@@ -379,7 +408,7 @@ data = get(hObject,'Data');
 indices = eventdata.Indices;
 r = indices(:,1);
 selected_vals = data(r);
-disp(selected_vals);
+
 set(handles.nbFrame, 'String',selected_vals);
 set(handles.slider,'Value', selected_vals);
 guidata(hObject, handles);
@@ -401,8 +430,7 @@ guidata(hObject,handles);
 function mouseFcn(hObject, eventdata, handles)
 
 zoom = axis(handles.axes1);
-disp('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-disp(zoom);
+
 handles.Zoom = zoom;
 guidata(hObject,handles);
 
@@ -412,8 +440,12 @@ choice = questdlg('Do you want to save this ROI?',...
       'Yes','No','Yes');
 switch choice,
     case 'Yes',
+  
+        handles.number = handles.number +1;
+        guidata(hObject,handles);
         ROI_informations(hObject, eventdata, handles)
-
+        disp('LOLOLOLOLOLOLOLOLOLOLOLOLOLOL');
+disp( handles.number);
      case 'No'
         uipushtool3_ClickedCallback(hObject, eventdata, handles)
 end
@@ -432,39 +464,96 @@ slider_Callback(hObject, eventdata, handles);
 function ROI_informations(hObject, eventdata, handles)
 
 Answers = inputdlg({'ROI Name?',...
-            'Number of cells followed?','Description?'},'ROI informations', [1 1 3]);
-[name, nb, descr] = Answers{:};
-oldData = get(handles.ROI, 'Data');
+            'Number of cells followed?','Number of events ?', 'Description?'},'ROI informations', [1 1 1 3]);
+[name, nb,events,  descr] = Answers{:};
 
+oldData = get(handles.ROI, 'Data');
+id = handles.number;
 ax=handles.Zoom;
 
-newData = [oldData; [{name},{nb},{descr} ,{ax(1)},{ax(2)},{ax(3)} ,{ax(4)}]];
+handles.allData(id).name = {name};
+handles.allData(id).nb = {nb};
+handles.allData(id).descr = {descr};
+handles.allData(id).nbEvents = {events};
+newData = [oldData; [id , {name},{nb},{descr} ,{events},{ax(1)},{ax(2)},{ax(3)} ,{ax(4)}]];
+
 % set (handles.ROI, 'Data',name,nb,descr);
 % handles.ROI = newData;
 % guidata(hObject,handles);
 set(handles.ROI, 'Data',newData);
+handles.nbEvents = str2num(events);
+guidata(hObject,handles);
+events_manage(hObject, eventdata, handles,id);
 
 
-function events_manage(hObject, eventdata, handles)
+function events_manage(hObject, eventdata, handles,id)
 
-Answers = inputdlg({' Number of events ?'},'ROI informations', [1]);
+allData = handles.allData;
+nbEvents = handles.nbEvents;
+set(handles.uitable8, 'Data', '');
+for k=1:nbEvents
+    prompt = {'Name event ','Shortkeys : '};
+    dlg_title = ['Event n°:'  int2str(k)];
+    num_lines = 1;
+    defaultans = {['Event'  int2str(k)],int2str(k)};
+    answers = inputdlg(prompt,dlg_title,num_lines,defaultans);
+    [event,  shortkeys] = answers{:};
+    oldData = get(handles.uitable8, 'Data');
 
+    newData = [oldData; {event shortkeys}];
+    
+    allData(id).events{k} = {event shortkeys};
+    allData(id).events{k}{3} = handles.data; % initialiser les tableaux avec des zeros pour les evenements
+    set(handles.uitable8, 'Data', newData);
+end
+% disp('QQQQQQQQQQQQQQQ');
+% disp(allData(1).events{3}{3});
+handles.allData = allData;
+guidata(hObject,handles);
+%      disp(allData(1).ROI);
 % --- Executes when selected cell(s) is changed in ROI.
 function ROI_CellSelectionCallback(hObject, eventdata, handles)
 % hObject    handle to ROI (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
 %	Indices: row and column indices of the cell(s) currently selecteds
 % handles    structure with handles and user data (see GUIDATA)
+allData = handles.allData;
 row = eventdata.Indices;
 disp('row');
 disp(row(1));
+
+disp('selected_vals');
+disp(row(1));
+disp('selected_vals');
+handles.selected_row = row(1);
+
 row = row(1);
 data=get(handles.ROI,'Data');
-disp(data);
-axa= data(row(1),4);
-axb=data(row(1),5);
-axc=data(row(1),6);
-axd=data(row(1),7);
+
+axa= data(row(1),6);
+axb=data(row(1),7);
+axc=data(row(1),8);
+axd=data(row(1),9);
 handles.Zoom =[ cell2mat(axa(1)), cell2mat(axb(1)), cell2mat(axc(1)), cell2mat(axd(1))]; 
 guidata(hObject,handles);
 slider_Callback(hObject, eventdata, handles);  
+set_events(hObject, eventdata, handles,row);
+allData = handles.allData;
+
+
+function set_events(hObject, eventdata, handles,row)
+
+
+set(handles.uitable8, 'Data', '');
+allData = handles.allData;
+nbEvents = allData(row).nbEvents;
+nbEvents = str2double(nbEvents);
+disp(nbEvents);
+for k=1:nbEvents
+
+    oldData = get(handles.uitable8, 'Data');
+    newData = [oldData; {allData(row).events{k}{1} allData(row).events{k}{2}}];
+    set(handles.uitable8, 'Data', newData);
+end
+
+%  newData = allData(row).events{3};
