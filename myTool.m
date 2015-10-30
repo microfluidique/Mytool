@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 08-Oct-2015 16:08:56
+% Last Modified by GUIDE v2.5 30-Oct-2015 14:41:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,14 +56,15 @@ function myTool_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 handles.number = 0;
 handles.allData= struct;
+handles.pause = 0.0;
 % Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes myTool wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-play = imread('play.jpg');
-play = imresize(play, 0.2);
-set(handles.start , 'Cdata', play);
+
+
+
 img = imread('tv.jpg');
 
 
@@ -114,7 +115,11 @@ function start_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 nbFrames = getappdata(handles.start , 'int');
+ax=handles.Zoom; 
+logical(handles.pause);
+disp('PAUSEEEEEEEEEE')
 
+disp(handles.pause);
 value  = get(handles.slider, 'Value');
 if(strcmp(get(handles.start,'String'),'Start'))
     uiresume();
@@ -122,11 +127,14 @@ if(strcmp(get(handles.start,'String'),'Start'))
     for k=value:nbFrames
         img=read(handles.videoObject,k);
         img = imadjust(rgb2gray(img)) ;
+        img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
+
         axes(handles.axes1);
         imshow(img);
         drawnow;
         set(handles.nbFrame, 'String', round(k));
         set(handles.slider,'Value', k); 
+        pause(handles.pause);
     end
     
 else
@@ -336,10 +344,13 @@ function first_Callback(hObject, eventdata, handles)
 % hObject    handle to first (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+ax=handles.Zoom;
 set(handles.slider,'Value', 1); 
 set(handles.nbFrame, 'String',1);
 frame_1 = read(handles.videoObject,1);
+frame_1 = imadjust(rgb2gray(frame_1)) ;
 
+frame_1= imcrop(frame_1, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
 axes(handles.axes1);
 imshow(frame_1);
 drawnow;
@@ -350,10 +361,12 @@ function last_Callback(hObject, eventdata, handles)
 % hObject    handle to last (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+ax=handles.Zoom;
 set(handles.slider,'Value', inf); 
 set(handles.nbFrame, 'String',inf);
 frame_inf = read(handles.videoObject,inf);
-
+frame_inf = imadjust(rgb2gray(frame_inf)) ;
+frame_inf= imcrop(frame_inf, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
 axes(handles.axes1);
 imshow(frame_inf);
 drawnow;
@@ -557,3 +570,36 @@ for k=1:nbEvents
 end
 
 %  newData = allData(row).events{3};
+
+
+% --- Executes on button press in forward.
+function forward_Callback(hObject, eventdata, handles)
+% hObject    handle to forward (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+handles.pause = handles.pause - 0.1;
+
+if(handles.pause < 0)
+    handles.pause = 0.0;
+end
+disp('PAUSEEEEEEEEEE1')
+disp(handles.pause);
+guidata(hObject,handles);
+
+
+% --- Executes on button press in rewind.
+function rewind_Callback(hObject, eventdata, handles)
+% hObject    handle to rewind (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+handles.pause = handles.pause + 0.1;
+if(handles.pause > 1.0)
+    handles.pause = 1.0;
+end
+disp('PAUSEEEEEEEEEE22')
+disp(handles.pause);
+guidata(hObject,handles);
+
