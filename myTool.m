@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 30-Oct-2015 14:41:19
+% Last Modified by GUIDE v2.5 05-Nov-2015 17:24:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -48,7 +48,7 @@ end
 function myTool_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
+% eventdata  reserved - to be defined in a æfuture version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to myTool (see VARARGIN)
 
@@ -57,6 +57,7 @@ handles.output = hObject;
 handles.number = 0;
 handles.allData= struct;
 handles.pause = 0.0;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -116,10 +117,6 @@ function start_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 nbFrames = getappdata(handles.start , 'int');
 ax=handles.Zoom; 
-logical(handles.pause);
-disp('PAUSEEEEEEEEEE')
-
-disp(handles.pause);
 value  = get(handles.slider, 'Value');
 if(strcmp(get(handles.start,'String'),'Start'))
     uiresume();
@@ -135,6 +132,7 @@ if(strcmp(get(handles.start,'String'),'Start'))
         set(handles.nbFrame, 'String', round(k));
         set(handles.slider,'Value', k); 
         pause(handles.pause);
+      
     end
     
 else
@@ -149,16 +147,6 @@ function slider_Callback(hObject, eventdata, handles)
 % hObject    handle to slider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% global firstTime;
-% global Zoom;
-% firstTime = 1;
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
- % zoom = axis(handles.axes1);
-% handles.zoom = zoom;
-% disp('slide');
-% disp(zoom);
-% guidata(hObject, handles);
 
 videoObject = handles.videoObject;
 value  = get(handles.slider, 'Value');
@@ -174,11 +162,9 @@ set(handles.nbFrame, 'String',round(value));
 % if(isempty(handles.Zoom)) 
 %      moi = 'fff';
 % else
-zoom reset;
+
 ax=handles.Zoom; 
 img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
-
-  
 imshow(img);
 drawnow;
    
@@ -250,7 +236,7 @@ axis(handles.axes1,'off');
 % set(handles.pushbutton2,'Enable','on');
 % set(handles.pushbutton1,'Enable','off');
 %Update handles
-handles.videoObject = videoObject;
+  handles.videoObject = videoObject;
 guidata(hObject,handles);
 videoObject = handles.videoObject;
 nbFrames=videoObject.NumberOfFrames;
@@ -268,21 +254,20 @@ handles.data = table;
 zoom = axis(handles.axes1);
 
 handles.Zoom = zoom;
-disp('zoom') ; 
-disp(zoom) ; 
+
 handles.originalZoom = zoom;
 guidata(hObject,handles);
 % --- Executes on button press in bud.
 
 function event_Callback(hObject, eventdata, handles,event_number ,selected_row )
-
+set(handles.uitable1 ,'visible','on');
 allData = handles.allData;
 %allData(selected_row).events{event_number}{3} = {table};
 value  = get(handles.slider, 'Value');
-
+ set_table_last_events(hObject, eventdata, handles,event_number ,selected_row,value  );
 class(allData(selected_row).events{event_number}{3})
 disp('lologl');
- disp(allData(selected_row).events{event_number}{3}(1));
+ disp(allData(selected_row).events{event_number}{1});
 
  if allData(selected_row).events{event_number}{3}(round(value)) == 1
      allData(selected_row).events{event_number}{3}(round(value)) = 0;
@@ -322,17 +307,28 @@ guidata(hObject,handles);
  legends= [];
  for j=1:nbEvents
       dataPlot = [dataPlot allData(selected_row).events{j}{3}];
-      legends = [legends ; allData(selected_row).events{j}{1}];
+      legends = [legends ; allData(selected_row).events{j}{1} blanks(50 - length(allData(selected_row).events{j}{1}))];
      
  end
  
- 
-  disp('dataPlot');
-  disp(dataPlot);
-  plot(handles.axes3, dataPlot);
+        
+plot(handles.axes3, dataPlot);
 
-  legend(handles.axes3 , legends);
-    
+legend(handles.axes3 , legends);
+  
+  
+function set_table_last_events(hObject, eventdata, handles,event_number ,selected_row, value  )
+allData =  handles.allData;
+oldData = get(handles.uitable1, 'Data');
+
+
+newData = [oldData; {selected_row allData(selected_row).events{event_number}{1} round(value)}];
+
+newDataExtract = newData(end-14:end, :)  % 5 derniers elements
+disp(newDataExtract);
+set (handles.uitable1, 'Data', newDataExtract);        
+        
+        
 % --- Executes on button press in bud.
 function file_Callback(hObject, eventdata, handles)
 % hObject    handle to bud (see GCBO)
@@ -381,8 +377,10 @@ function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
+    
 allData = handles.allData;
 selected_row  = handles.selected_row  ; 
+
 nbEvents = allData(selected_row).nbEvents;
 nbEvents = str2double(nbEvents);
 for k=1:nbEvents
@@ -433,7 +431,8 @@ function uitoggletool1_OnCallback(hObject, eventdata, handles)
 % hObject    handle to uitoggletool1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-disp(zoom);
+
+
 handles.Zoom = zoom;
 set(handles.Zoom,'ActionPostCallback',{@mouseFcn,handles});
 guidata(hObject,handles);
@@ -457,13 +456,19 @@ switch choice,
         handles.number = handles.number +1;
         guidata(hObject,handles);
         ROI_informations(hObject, eventdata, handles)
-        disp('LOLOLOLOLOLOLOLOLOLOLOLOLOLOL');
-disp( handles.number);
+      
+
      case 'No'
         uipushtool3_ClickedCallback(hObject, eventdata, handles)
 end
 
-set(handles.uitoggletool1, 'State', 'off');
+%   set(handles.uitoggletool1, 'State', 'off');
+% p=datacursormode(handles.axes3);
+% set(p,'Enable','on');
+% %% ensuite j'ai un caractère qui me permet de savoir si j'ai cliqué ou non puis
+% set(p,'Enable','off');
+% p = datacursormode(gcf);
+% p.removeAllDataCursors;
 
 % -------------------------------------------------------------------
 function uipushtool3_ClickedCallback(hObject, eventdata, handles)
@@ -479,7 +484,7 @@ function ROI_informations(hObject, eventdata, handles)
 Answers = inputdlg({'ROI Name?',...
             'Number of cells followed?','Number of events ?', 'Description?'},'ROI informations', [1 1 1 3]);
 [name, nb,events,  descr] = Answers{:};
-
+set(handles.ROI ,'visible','on');
 oldData = get(handles.ROI, 'Data');
 id = handles.number;
 ax=handles.Zoom;
@@ -489,7 +494,7 @@ handles.allData(id).nb = {nb};
 handles.allData(id).descr = {descr};
 handles.allData(id).nbEvents = {events};
 newData = [oldData; [id , {name},{nb},{descr} ,{events},{ax(1)},{ax(2)},{ax(3)} ,{ax(4)}]];
-
+handles.selected_row=id;
 % set (handles.ROI, 'Data',name,nb,descr);
 % handles.ROI = newData;
 % guidata(hObject,handles);
@@ -503,6 +508,7 @@ function events_manage(hObject, eventdata, handles,id)
 
 allData = handles.allData;
 nbEvents = handles.nbEvents;
+set(handles.uitable8 ,'visible','on');
 set(handles.uitable8, 'Data', '');
 for k=1:nbEvents
     prompt = {'Name event ','Shortkeys : '};
@@ -519,11 +525,11 @@ for k=1:nbEvents
     allData(id).events{k}{3} = handles.data; % initialiser les tableaux avec des zeros pour les evenements
     set(handles.uitable8, 'Data', newData);
 end
-% disp('QQQQQQQQQQQQQQQ');
-% disp(allData(1).events{3}{3});
+ 
 handles.allData = allData;
 guidata(hObject,handles);
-%      disp(allData(1).ROI);
+
+
 % --- Executes when selected cell(s) is changed in ROI.
 function ROI_CellSelectionCallback(hObject, eventdata, handles)
 % hObject    handle to ROI (see GCBO)
@@ -532,12 +538,7 @@ function ROI_CellSelectionCallback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 allData = handles.allData;
 row = eventdata.Indices;
-disp('row');
-disp(row(1));
 
-disp('selected_vals');
-disp(row(1));
-disp('selected_vals');
 handles.selected_row = row(1);
 
 row = row(1);
@@ -583,10 +584,9 @@ handles.pause = handles.pause - 0.1;
 if(handles.pause < 0)
     handles.pause = 0.0;
 end
-disp('PAUSEEEEEEEEEE1')
-disp(handles.pause);
+set(handles.start,'String','Start');
 guidata(hObject,handles);
-
+start_Callback(hObject, eventdata, handles);
 
 % --- Executes on button press in rewind.
 function rewind_Callback(hObject, eventdata, handles)
@@ -599,7 +599,43 @@ handles.pause = handles.pause + 0.1;
 if(handles.pause > 1.0)
     handles.pause = 1.0;
 end
-disp('PAUSEEEEEEEEEE22')
-disp(handles.pause);
-guidata(hObject,handles);
 
+    set(handles.start,'String','Start');
+guidata(hObject,handles);
+start_Callback(hObject, eventdata, handles);
+
+
+
+% --- Executes on button press in export.
+function export_Callback(hObject, eventdata, handles)
+% hObject    handle to export (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+allData = handles.allData;
+
+selected_row  = handles.selected_row  ; 
+nbEvents = allData(selected_row).nbEvents;
+nbEvents = str2double(nbEvents);
+
+newData = [];
+
+for k=1:nbEvents
+    newData = [newData,  allData(selected_row).events{k}{3} ];
+ 
+end
+date = datestr(now,'_dd-mm-yy_HH:MM');
+filename = ['./results/export_',allData(selected_row).name,date,'.csv'];
+filename = strjoin(filename, '')
+disp(filename)
+csvwrite(filename , newData);
+
+msgbox('File exported !!');
+
+
+
+% --------------------------------------------------------------------
+function Quit_Callback(hObject, eventdata, handles)
+% hObject    handle to Quit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+delete(handles.figure1) ;
