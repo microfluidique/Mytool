@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 05-Nov-2015 17:24:27
+% Last Modified by GUIDE v2.5 09-Nov-2015 13:38:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -377,7 +377,6 @@ function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
 
-    
 allData = handles.allData;
 selected_row  = handles.selected_row  ; 
 
@@ -389,24 +388,30 @@ for k=1:nbEvents
     end
 end
 
+valueSlider  = get(handles.slider, 'Value');
+
+ switch(eventdata.Key)
+    case 'rightarrow'
+    right_Callback(hObject, eventdata, handles);
+        
+    case 'leftarrow'
+     left_Callback(hObject, eventdata, handles);
+ end
 
 
 
-
-
-
-% valueSlider  = get(handles.slider, 'Value');
-% 
-%  switch(eventdata.Key)
-%     case 'rightarrow'
-% 
-% set(handles.slider,'Value',valueSlider+1);
-%         slider_Callback(hObject, eventdata, handles);
-%     case 'leftarrow'
-% 
-%       set(handles.slider,'Value',valueSlider-1);
-%         slider_Callback(hObject, eventdata, handles);
-%  end
+% % valueSlider  = get(handles.slider, 'Value');
+% % 
+% %  switch(eventdata.Key)
+% %     case 'rightarrow'
+% % 
+% % set(handles.slider,'Value',valueSlider+1);
+% %         slider_Callback(hObject, eventdata, handles);
+% %     case 'leftarrow'
+% % 
+% %       set(handles.slider,'Value',valueSlider-1);
+% %         slider_Callback(hObject, eventdata, handles);
+% %  end
 
 
 % --- Executes when selected cell(s) is changed in uitable1.
@@ -625,11 +630,12 @@ for k=1:nbEvents
 end
 date = datestr(now,'_dd-mm-yy_HH:MM');
 filename = ['./results/export_',allData(selected_row).name,date,'.csv'];
-filename = strjoin(filename, '')
-disp(filename)
+filename = [filename{1},filename{2},filename{3},filename{4}] ;
+
 csvwrite(filename , newData);
 
 msgbox('File exported !!');
+
 
 
 
@@ -639,3 +645,26 @@ function Quit_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 delete(handles.figure1) ;
+
+
+% --- Executes on button press in right.
+function right_Callback(hObject, eventdata, handles)
+% hObject    handle to right (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+value  = get(handles.slider, 'Value');
+set(handles.slider,'Value', value+1); 
+guidata(hObject,handles);
+
+slider_Callback(hObject, eventdata, handles);
+
+% --- Executes on button press in right.
+function left_Callback(hObject, eventdata, handles)
+% hObject    handle to right (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+value  = get(handles.slider, 'Value');
+set(handles.slider,'Value', value-1); 
+guidata(hObject,handles);
+
+slider_Callback(hObject, eventdata, handles);
