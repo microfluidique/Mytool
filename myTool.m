@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 09-Nov-2015 13:38:10
+% Last Modified by GUIDE v2.5 10-Nov-2015 16:33:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -88,26 +88,7 @@ varargout{1} = handles.output;
 
 
 
-function path_Callback(hObject, eventdata, handles)
-% hObject    handle to path (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of path as text
-%        str2double(get(hObject,'String')) returns contents of path as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function path_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to path (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 % --- Executes on button press in start.
@@ -169,16 +150,6 @@ imshow(img);
 drawnow;
    
 
-% --- Executes during object creation, after setting all properties.
-function slider_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
 
 
 
@@ -191,19 +162,10 @@ function nbFrame_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of nbFrame as a double
 
 
-% --- Executes during object creation, after setting all properties.
-function nbFrame_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to nbFrame (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
+value = str2double(get(hObject,'String'));
+set(handles.slider,'Value', value);
+guidata(hObject,handles);
+slider_Callback(hObject, eventdata, handles);
 
 % --------------------------------------------------------------------
 function video_Callback(hObject, eventdata, handles)
@@ -577,38 +539,38 @@ end
 
 %  newData = allData(row).events{3};
 
-
-% --- Executes on button press in forward.
-function forward_Callback(hObject, eventdata, handles)
-% hObject    handle to forward (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-handles.pause = handles.pause - 0.1;
-
-if(handles.pause < 0)
-    handles.pause = 0.0;
-end
-set(handles.start,'String','Start');
-guidata(hObject,handles);
-start_Callback(hObject, eventdata, handles);
-
-% --- Executes on button press in rewind.
-function rewind_Callback(hObject, eventdata, handles)
-% hObject    handle to rewind (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-handles.pause = handles.pause + 0.1;
-if(handles.pause > 1.0)
-    handles.pause = 1.0;
-end
-
-    set(handles.start,'String','Start');
-guidata(hObject,handles);
-start_Callback(hObject, eventdata, handles);
-
+% 
+% % --- Executes on button press in forward.
+% function forward_Callback(hObject, eventdata, handles)
+% % hObject    handle to forward (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% handles.pause = handles.pause - 0.1;
+% 
+% if(handles.pause < 0)
+%     handles.pause = 0.0;
+% end
+% set(handles.start,'String','Start');
+% guidata(hObject,handles);
+% start_Callback(hObject, eventdata, handles);
+% 
+% % --- Executes on button press in rewind.
+% function rewind_Callback(hObject, eventdata, handles)
+% % hObject    handle to rewind (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% 
+% handles.pause = handles.pause + 0.1;
+% if(handles.pause > 1.0)
+%     handles.pause = 1.0;
+% end
+% 
+%     set(handles.start,'String','Start');
+% guidata(hObject,handles);
+% start_Callback(hObject, eventdata, handles);
+% 
 
 
 % --- Executes on button press in export.
@@ -668,3 +630,19 @@ set(handles.slider,'Value', value-1);
 guidata(hObject,handles);
 
 slider_Callback(hObject, eventdata, handles);
+
+
+% --- Executes on slider movement.
+function sliderSpeed_Callback(hObject, eventdata, handles)
+% hObject    handle to sliderSpeed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+value  = get(handles.sliderSpeed, 'Value');
+handles.pause = (1-value);
+guidata(hObject,handles);
+    set(handles.start,'String','Pause');
+   start_Callback(hObject, eventdata, handles);
