@@ -198,7 +198,7 @@ axis(handles.axes1,'off');
 % set(handles.pushbutton2,'Enable','on');
 % set(handles.pushbutton1,'Enable','off');
 %Update handles
-  handles.videoObject = videoObject;
+handles.videoObject = videoObject;
 guidata(hObject,handles);
 videoObject = handles.videoObject;
 nbFrames=videoObject.NumberOfFrames;
@@ -226,43 +226,23 @@ set(handles.uitable1 ,'visible','on');
 allData = handles.allData;
 %allData(selected_row).events{event_number}{3} = {table};
 value  = get(handles.slider, 'Value');
- set_table_last_events(hObject, eventdata, handles,event_number ,selected_row,value  );
-class(allData(selected_row).events{event_number}{3})
-disp('lologl');
- disp(allData(selected_row).events{event_number}{1});
+set_table_last_events(hObject, eventdata, handles,event_number ,selected_row,value  );
+
 
  if allData(selected_row).events{event_number}{3}(round(value)) == 1
      allData(selected_row).events{event_number}{3}(round(value)) = 0;
      
-     disp(round(value));
-     disp(allData(selected_row).events{event_number}{3}(round(value)));
  else
      allData(selected_row).events{event_number}{3}(round(value)) = 1;
-     disp(round(value));
-     disp(allData(selected_row).events{event_number}{3}(round(value)));
+   
+
  end
 handles.allData = allData;
 guidata(hObject,handles);
-% handles.data = table;
-% guidata(hObject,handles);
+
  nbFrames = getappdata(handles.start , 'int');
  x = [1:nbFrames];
-% table = handles.data;
-% save('results','table');
 
-%  y = allData(1).events{1}{3};
-%  
-%   y2 = allData(1).events{2}{3};
-% plot(handles.axes3, x,y,  x, y2 ); 
-
-%  plot(handles.axes3, x, y2);
-
- 
- 
- 
-%   dataPlot =[  y  y2];
- 
-%  
  nbEvents = allData(selected_row).nbEvents;
  nbEvents = str2double(nbEvents);
  dataPlot= [];
@@ -276,18 +256,28 @@ guidata(hObject,handles);
         
 plot(handles.axes3, dataPlot);
 
+tableX =[1:nbFrames];
+tableX = transpose(tableX);
+tableY = allData(selected_row).events{event_number}{3};
+x=tableX(~(tableY ==0));
+y= tableY(~(tableY ==0));
+
+text(x, y,num2str(x),'Parent', handles.axes3 , 'FontSize',7, 'Color' , 'red','FontWeight', 'normal' ,'BackgroundColor',[.7 .9 .7],'VerticalAlignment' , 'top','HorizontalAlignment','center','Margin',0.1);
 legend(handles.axes3 , legends);
-  
   
 function set_table_last_events(hObject, eventdata, handles,event_number ,selected_row, value  )
 allData =  handles.allData;
 oldData = get(handles.uitable1, 'Data');
 
+if allData(selected_row).events{event_number}{3}(round(value)) == 1
+    allData(selected_row).events{event_number}{3}(round(value)) = 0;
+else
+    allData(selected_row).events{event_number}{3}(round(value)) = 1;
+end
+newData = [oldData; {selected_row allData(selected_row).events{event_number}{1} round(value) allData(selected_row).events{event_number}{3}(round(value))}];
 
-newData = [oldData; {selected_row allData(selected_row).events{event_number}{1} round(value)}];
+newDataExtract = newData(end-14:end, :) ; % 5 derniers elements
 
-newDataExtract = newData(end-14:end, :)  % 5 derniers elements
-disp(newDataExtract);
 set (handles.uitable1, 'Data', newDataExtract);        
         
         
@@ -529,7 +519,7 @@ set(handles.uitable8, 'Data', '');
 allData = handles.allData;
 nbEvents = allData(row).nbEvents;
 nbEvents = str2double(nbEvents);
-disp(nbEvents);
+
 for k=1:nbEvents
 
     oldData = get(handles.uitable8, 'Data');
@@ -579,11 +569,9 @@ function export_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 allData = handles.allData;
-
 selected_row  = handles.selected_row  ; 
 nbEvents = allData(selected_row).nbEvents;
 nbEvents = str2double(nbEvents);
-
 newData = [];
 
 for k=1:nbEvents
@@ -591,11 +579,10 @@ for k=1:nbEvents
  
 end
 date = datestr(now,'_dd-mm-yy_HH:MM');
-filename = ['./results/export_',allData(selected_row).name,date,'.csv'];
+folder_name = uigetdir('./results','save csv file')
+filename = [folder_name , '/export_',allData(selected_row).name,date,'.csv'];
 filename = [filename{1},filename{2},filename{3},filename{4}] ;
-
 csvwrite(filename , newData);
-
 msgbox('File exported !!');
 
 
@@ -644,5 +631,5 @@ function sliderSpeed_Callback(hObject, eventdata, handles)
 value  = get(handles.sliderSpeed, 'Value');
 handles.pause = (1-value);
 guidata(hObject,handles);
-    set(handles.start,'String','Pause');
-   start_Callback(hObject, eventdata, handles);
+set(handles.start,'String','Pause');
+start_Callback(hObject, eventdata, handles);
