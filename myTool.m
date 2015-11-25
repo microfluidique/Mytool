@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 10-Nov-2015 16:33:55
+% Last Modified by GUIDE v2.5 24-Nov-2015 14:34:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,7 +57,7 @@ handles.output = hObject;
 handles.number = 0;
 handles.allData= struct;
 handles.pause = 0.0;
-
+handles.openProject = 'no';
 % Update handles structure
 guidata(hObject, handles);
 
@@ -130,7 +130,9 @@ function slider_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 videoObject = handles.videoObject;
+videoObject
 value  = get(handles.slider, 'Value');
+class(value)
 img=read(videoObject,value);
 img = imadjust(rgb2gray(img));
 
@@ -143,8 +145,9 @@ set(handles.nbFrame, 'String',round(value));
 % if(isempty(handles.Zoom)) 
 %      moi = 'fff';
 % else
-
+handles.Zoom
 ax=handles.Zoom; 
+
 img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
 imshow(img);
 drawnow;
@@ -173,11 +176,20 @@ function video_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 %answer = inputdlg('fffff')
-[ video_file_name,video_file_path ] = uigetfile({'*.*'},'Pick a video file');      %;*.png;*.yuv;*.bmp;*.tif'},'Pick a file');
-if(video_file_path == 0)
-    return;
+if (strcmp(handles.openProject ,'yes'))
+    handles.videoPathSaved
+   input_video_file =  handles.videoPathSaved;
+else
+    [ video_file_name,video_file_path ] = uigetfile({'*.*'},'Pick a video file');      %;*.png;*.yuv;*.bmp;*.tif'},'Pick a file');
+    input_video_file = [video_file_path,video_file_name];
+
 end
-input_video_file = [video_file_path,video_file_name];
+
+
+% if(input_video_file == 0)
+%     return;
+% end
+
 set(handles.path,'String',input_video_file);
 % Acquiring video
 videoObject = VideoReader(input_video_file);
@@ -189,6 +201,7 @@ imshow(frame_1);
 drawnow;
 set(hObject, 'Enable', 'on')
 axis(handles.axes1,'off');
+
 % Display Frame Number
 % set(handles.text3,'String','1');
 % set(handles.text4,'String',['  /  ',num2str(videoObject.NumberOfFrames)]);
@@ -385,11 +398,6 @@ slider_Callback(hObject, eventdata, handles);
 
 % --------------------------------------------------------------------
 function uitoggletool1_OnCallback(hObject, eventdata, handles)
-% hObject    handle to uitoggletool1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
 handles.Zoom = zoom;
 set(handles.Zoom,'ActionPostCallback',{@mouseFcn,handles});
 guidata(hObject,handles);
@@ -397,9 +405,7 @@ guidata(hObject,handles);
 
 
 function mouseFcn(hObject, eventdata, handles)
-
 zoom = axis(handles.axes1);
-
 handles.Zoom = zoom;
 guidata(hObject,handles);
 
@@ -429,9 +435,6 @@ end
 
 % -------------------------------------------------------------------
 function uipushtool3_ClickedCallback(hObject, eventdata, handles)
-% hObject    handle to uipushtool3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)re
 handles.Zoom = handles.originalZoom;
 guidata(hObject,handles);
 slider_Callback(hObject, eventdata, handles);   
@@ -462,7 +465,6 @@ events_manage(hObject, eventdata, handles,id);
 
 
 function events_manage(hObject, eventdata, handles,id)
-
 allData = handles.allData;
 nbEvents = handles.nbEvents;
 set(handles.uitable8 ,'visible','on');
@@ -489,18 +491,11 @@ guidata(hObject,handles);
 
 % --- Executes when selected cell(s) is changed in ROI.
 function ROI_CellSelectionCallback(hObject, eventdata, handles)
-% hObject    handle to ROI (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
-%	Indices: row and column indices of the cell(s) currently selecteds
-% handles    structure with handles and user data (see GUIDATA)
 allData = handles.allData;
 row = eventdata.Indices;
-
 handles.selected_row = row(1);
-
 row = row(1);
 data=get(handles.ROI,'Data');
-
 axa= data(row(1),6);
 axb=data(row(1),7);
 axc=data(row(1),8);
@@ -565,9 +560,6 @@ end
 
 % --- Executes on button press in export.
 function export_Callback(hObject, eventdata, handles)
-% hObject    handle to export (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 allData = handles.allData;
 selected_row  = handles.selected_row  ; 
 nbEvents = allData(selected_row).nbEvents;
@@ -584,23 +576,17 @@ filename = [folder_name , '/export_',allData(selected_row).name,date,'.csv'];
 filename = [filename{1},filename{2},filename{3},filename{4}] ;
 csvwrite(filename , newData);
 msgbox('File exported !!');
-
+msgbox
 
 
 
 % --------------------------------------------------------------------
 function Quit_Callback(hObject, eventdata, handles)
-% hObject    handle to Quit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 delete(handles.figure1) ;
 
 
 % --- Executes on button press in right.
 function right_Callback(hObject, eventdata, handles)
-% hObject    handle to right (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 value  = get(handles.slider, 'Value');
 set(handles.slider,'Value', value+1); 
 guidata(hObject,handles);
@@ -609,9 +595,6 @@ slider_Callback(hObject, eventdata, handles);
 
 % --- Executes on button press in right.
 function left_Callback(hObject, eventdata, handles)
-% hObject    handle to right (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 value  = get(handles.slider, 'Value');
 set(handles.slider,'Value', value-1); 
 guidata(hObject,handles);
@@ -621,15 +604,56 @@ slider_Callback(hObject, eventdata, handles);
 
 % --- Executes on slider movement.
 function sliderSpeed_Callback(hObject, eventdata, handles)
-% hObject    handle to sliderSpeed (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-
 value  = get(handles.sliderSpeed, 'Value');
 handles.pause = (1-value);
 guidata(hObject,handles);
 set(handles.start,'String','Pause');
 start_Callback(hObject, eventdata, handles);
+
+
+
+% --------------------------------------------------------------------
+function save_Callback(hObject, eventdata, handles)
+allData = handles.allData;
+answer = inputdlg('Enter your name project (without spaces)');
+[name] = answer{:};
+folder_name = uigetdir('./results','Save project');
+filename = [folder_name,'/',name,'.mat' ];
+valueSlider  = get(handles.slider, 'Value');
+valueSlider = round(valueSlider);
+videoObject = handles.videoObject;
+zoom = handles.Zoom;
+dataRoiTable=get(handles.ROI,'Data');
+dataEventsTable=get(handles.uitable8,'Data');
+dataHistoryTable=get(handles.uitable1,'Data');
+save(filename,'allData', 'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable');
+
+function open_Callback(hObject, eventdata, handles)
+[ file_name,folder_name ] = uigetfile({'*.*'},'Select your file ')
+path_file = [folder_name,file_name];
+path_file
+loadMatFile = load(path_file,'allData',  'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable');
+handles.openProject = 'yes';
+videoPath = [loadMatFile.videoObject.Path, '/' , loadMatFile.videoObject.Name];
+handles.videoPathSaved =videoPath;
+handles.Zoom = loadMatFile.zoom;
+handles.allData = loadMatFile.allData;
+videoObject = VideoReader(videoPath);
+handles.videoObject = videoObject;
+guidata(hObject,handles);
+video_Callback(hObject, eventdata, handles);
+value = loadMatFile.valueSlider;
+set(handles.slider,'Value', value); 
+guidata(hObject,handles);
+slider_Callback(hObject, eventdata, handles);
+set(handles.ROI ,'visible','on');
+set(handles.ROI, 'Data',loadMatFile.dataRoiTable);
+set(handles.uitable8 ,'visible','on');
+set(handles.uitable8, 'Data',loadMatFile.dataEventsTable);
+set(handles.uitable1 ,'visible','on');
+set(handles.uitable1, 'Data',loadMatFile.dataHistoryTable);
+
+
+function new_Callback(hObject, eventdata, handles)
+close(gcbf);
+myTool;
