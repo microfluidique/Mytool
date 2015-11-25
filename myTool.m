@@ -242,31 +242,33 @@ value  = get(handles.slider, 'Value');
 set_table_last_events(hObject, eventdata, handles,event_number ,selected_row,value  );
 
 
- if allData(selected_row).events{event_number}{3}(round(value)) == 1
-     allData(selected_row).events{event_number}{3}(round(value)) = 0;
-     
- else
-     allData(selected_row).events{event_number}{3}(round(value)) = 1;
-   
+if allData(selected_row).events{event_number}{3}(round(value)) == 1
+    allData(selected_row).events{event_number}{3}(round(value)) = 0;
+else
+    allData(selected_row).events{event_number}{3}(round(value)) = 1;
 
- end
+
+end
 handles.allData = allData;
 guidata(hObject,handles);
+plot_drawing(hObject, eventdata, handles,event_number, selected_row);
 
- nbFrames = getappdata(handles.start , 'int');
- x = [1:nbFrames];
+function plot_drawing(hObject, eventdata, handles,event_number ,selected_row )
 
- nbEvents = allData(selected_row).nbEvents;
- nbEvents = str2double(nbEvents);
- dataPlot= [];
- legends= [];
- for j=1:nbEvents
-      dataPlot = [dataPlot allData(selected_row).events{j}{3}];
-      legends = [legends ; allData(selected_row).events{j}{1} blanks(50 - length(allData(selected_row).events{j}{1}))];
-     
- end
- 
-        
+allData = handles.allData;
+nbFrames = getappdata(handles.start , 'int');
+x = [1:nbFrames];
+nbEvents = allData(selected_row).nbEvents;
+nbEvents = str2double(nbEvents);
+dataPlot= [];
+legends= [];
+for j=1:nbEvents
+  dataPlot = [dataPlot allData(selected_row).events{j}{3}];
+  legends = [legends ; allData(selected_row).events{j}{1} blanks(50 - length(allData(selected_row).events{j}{1}))];
+
+end
+
+
 plot(handles.axes3, dataPlot);
 
 tableX =[1:nbFrames];
@@ -277,7 +279,7 @@ y= tableY(~(tableY ==0));
 
 text(x, y,num2str(x),'Parent', handles.axes3 , 'FontSize',7, 'Color' , 'red','FontWeight', 'normal' ,'BackgroundColor',[.7 .9 .7],'VerticalAlignment' , 'top','HorizontalAlignment','center','Margin',0.1);
 legend(handles.axes3 , legends);
-  
+
 function set_table_last_events(hObject, eventdata, handles,event_number ,selected_row, value  )
 allData =  handles.allData;
 oldData = get(handles.uitable1, 'Data');
@@ -505,7 +507,7 @@ guidata(hObject,handles);
 slider_Callback(hObject, eventdata, handles);  
 set_events(hObject, eventdata, handles,row);
 allData = handles.allData;
-
+plot_drawing(hObject, eventdata, handles,1 ,row );
 
 function set_events(hObject, eventdata, handles,row)
 
