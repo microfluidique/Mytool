@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 24-Nov-2015 14:34:52
+% Last Modified by GUIDE v2.5 26-Nov-2015 16:11:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -130,9 +130,9 @@ function slider_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 videoObject = handles.videoObject;
-videoObject
+
 value  = get(handles.slider, 'Value');
-class(value)
+
 img=read(videoObject,value);
 img = imadjust(rgb2gray(img));
 
@@ -145,7 +145,7 @@ set(handles.nbFrame, 'String',round(value));
 % if(isempty(handles.Zoom)) 
 %      moi = 'fff';
 % else
-handles.Zoom
+
 ax=handles.Zoom; 
 
 img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
@@ -215,7 +215,7 @@ handles.videoObject = videoObject;
 guidata(hObject,handles);
 videoObject = handles.videoObject;
 nbFrames=videoObject.NumberOfFrames;
-
+handles.nbFrames = nbFrames;
 sliderMin = 1;
 sliderMax = nbFrames; % this is variable
 sliderStep = [1, 1]/(sliderMax-sliderMin); % major and minor steps of 1
@@ -234,37 +234,40 @@ handles.originalZoom = zoom;
 guidata(hObject,handles);
 % --- Executes on button press in bud.
 
-function event_Callback(hObject, eventdata, handles,event_number ,selected_row )
+function event_Callback(hObject, eventdata, handles,event_number ,selected_row_roi )
 set(handles.uitable1 ,'visible','on');
 allData = handles.allData;
-%allData(selected_row).events{event_number}{3} = {table};
+%allData(selected_row_roi).events{event_number}{3} = {table};
 value  = get(handles.slider, 'Value');
-set_table_last_events(hObject, eventdata, handles,event_number ,selected_row,value  );
+set_table_last_events(hObject, eventdata, handles,event_number ,selected_row_roi,value  );
 
 
-if allData(selected_row).events{event_number}{3}(round(value)) == 1
-    allData(selected_row).events{event_number}{3}(round(value)) = 0;
+if allData(selected_row_roi).events{event_number}{3}(round(value)) == 1
+    allData(selected_row_roi).events{event_number}{3}(round(value)) = 0;
+    
 else
-    allData(selected_row).events{event_number}{3}(round(value)) = 1;
-
+    allData(selected_row_roi).events{event_number}{3}(round(value)) = 1;
+  
 
 end
 handles.allData = allData;
 guidata(hObject,handles);
-plot_drawing(hObject, eventdata, handles,event_number, selected_row);
+  set_table_event(hObject, eventdata, handles,selected_row_roi,event_number);
+plot_drawing(hObject, eventdata, handles,event_number, selected_row_roi);
 
-function plot_drawing(hObject, eventdata, handles,event_number ,selected_row )
+function plot_drawing(hObject, eventdata, handles,event_number ,selected_row_roi )
 
 allData = handles.allData;
 nbFrames = getappdata(handles.start , 'int');
+
 x = [1:nbFrames];
-nbEvents = allData(selected_row).nbEvents;
+nbEvents = allData(selected_row_roi).nbEvents;
 nbEvents = str2double(nbEvents);
 dataPlot= [];
 legends= [];
 for j=1:nbEvents
-  dataPlot = [dataPlot allData(selected_row).events{j}{3}];
-  legends = [legends ; allData(selected_row).events{j}{1} blanks(50 - length(allData(selected_row).events{j}{1}))];
+  dataPlot = [dataPlot allData(selected_row_roi).events{j}{3}];
+  legends = [legends ; allData(selected_row_roi).events{j}{1} blanks(50 - length(allData(selected_row_roi).events{j}{1}))];
 
 end
 
@@ -273,23 +276,23 @@ plot(handles.axes3, dataPlot);
 
 tableX =[1:nbFrames];
 tableX = transpose(tableX);
-tableY = allData(selected_row).events{event_number}{3};
+tableY = allData(selected_row_roi).events{event_number}{3};
 x=tableX(~(tableY ==0));
 y= tableY(~(tableY ==0));
 
 text(x, y,num2str(x),'Parent', handles.axes3 , 'FontSize',7, 'Color' , 'red','FontWeight', 'normal' ,'BackgroundColor',[.7 .9 .7],'VerticalAlignment' , 'top','HorizontalAlignment','center','Margin',0.1);
 legend(handles.axes3 , legends);
 
-function set_table_last_events(hObject, eventdata, handles,event_number ,selected_row, value  )
+function set_table_last_events(hObject, eventdata, handles,event_number ,selected_row_roi, value  )
 allData =  handles.allData;
 oldData = get(handles.uitable1, 'Data');
 
-if allData(selected_row).events{event_number}{3}(round(value)) == 1
-    allData(selected_row).events{event_number}{3}(round(value)) = 0;
+if allData(selected_row_roi).events{event_number}{3}(round(value)) == 1
+    allData(selected_row_roi).events{event_number}{3}(round(value)) = 0;
 else
-    allData(selected_row).events{event_number}{3}(round(value)) = 1;
+    allData(selected_row_roi).events{event_number}{3}(round(value)) = 1;
 end
-newData = [oldData; {selected_row allData(selected_row).events{event_number}{1} round(value) allData(selected_row).events{event_number}{3}(round(value))}];
+newData = [oldData; {selected_row_roi allData(selected_row_roi).events{event_number}{1} round(value) allData(selected_row_roi).events{event_number}{3}(round(value))}];
 
 newDataExtract = newData(end-14:end, :) ; % 5 derniers elements
 
@@ -345,13 +348,13 @@ function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 allData = handles.allData;
-selected_row  = handles.selected_row  ; 
+selected_row_roi  = handles.selected_row_roi  ; 
 
-nbEvents = allData(selected_row).nbEvents;
+nbEvents = allData(selected_row_roi).nbEvents;
 nbEvents = str2double(nbEvents);
 for k=1:nbEvents
-    if strcmp(eventdata.Key,allData(selected_row).events{k}{2})
-        event_Callback(hObject, eventdata, handles, k ,selected_row );
+    if strcmp(eventdata.Key,allData(selected_row_roi).events{k}{2})
+        event_Callback(hObject, eventdata, handles, k ,selected_row_roi );
     end
 end
 
@@ -381,21 +384,21 @@ valueSlider  = get(handles.slider, 'Value');
 % %  end
 
 
-% --- Executes when selected cell(s) is changed in uitable1.
-function uitable1_CellSelectionCallback(hObject, eventdata, handles)
-% hObject    handle to uitable1 (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
-%	Indices: row and column indices of the cell(s) currently selecteds
-% handles    structure with handles and user data (see GUIDATA)
-data = get(hObject,'Data');
-indices = eventdata.Indices;
-r = indices(:,1);
-selected_vals = data(r);
-
-set(handles.nbFrame, 'String',selected_vals);
-set(handles.slider,'Value', selected_vals);
-guidata(hObject, handles);
-slider_Callback(hObject, eventdata, handles);
+% % --- Executes when selected cell(s) is changed in uitable1.
+% function uitable1_CellSelectionCallback(hObject, eventdata, handles)
+% % hObject    handle to uitable1 (see GCBO)
+% % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+% %	Indices: row and column indices of the cell(s) currently selecteds
+% % handles    structure with handles and user data (see GUIDATA)
+% data = get(hObject,'Data');
+% indices = eventdata.Indices;
+% r = indices(:,1);
+% selected_vals = data(r);
+% 
+% set(handles.nbFrame, 'String',selected_vals);
+% set(handles.slider,'Value', selected_vals);
+% guidata(hObject, handles);
+% slider_Callback(hObject, eventdata, handles);
 
 
 % --------------------------------------------------------------------
@@ -456,7 +459,7 @@ handles.allData(id).nb = {nb};
 handles.allData(id).descr = {descr};
 handles.allData(id).nbEvents = {events};
 newData = [oldData; [id , {name},{nb},{descr} ,{events},{ax(1)},{ax(2)},{ax(3)} ,{ax(4)}]];
-handles.selected_row=id;
+handles.selected_row_roi=id;
 % set (handles.ROI, 'Data',name,nb,descr);
 % handles.ROI = newData;
 % guidata(hObject,handles);
@@ -495,7 +498,7 @@ guidata(hObject,handles);
 function ROI_CellSelectionCallback(hObject, eventdata, handles)
 allData = handles.allData;
 row = eventdata.Indices;
-handles.selected_row = row(1);
+handles.selected_row_roi = row(1);
 row = row(1);
 data=get(handles.ROI,'Data');
 axa= data(row(1),6);
@@ -563,22 +566,22 @@ end
 % --- Executes on button press in export.
 function export_Callback(hObject, eventdata, handles)
 allData = handles.allData;
-selected_row  = handles.selected_row  ; 
-nbEvents = allData(selected_row).nbEvents;
+selected_row_roi  = handles.selected_row_roi  ; 
+nbEvents = allData(selected_row_roi).nbEvents;
 nbEvents = str2double(nbEvents);
 newData = [];
 
 for k=1:nbEvents
-    newData = [newData,  allData(selected_row).events{k}{3} ];
+    newData = [newData,  allData(selected_row_roi).events{k}{3} ];
  
 end
 date = datestr(now,'_dd-mm-yy_HH:MM');
-folder_name = uigetdir('./results','save csv file')
-filename = [folder_name , '/export_',allData(selected_row).name,date,'.csv'];
+folder_name = uigetdir('./results','save csv file');
+filename = [folder_name , '/export_',allData(selected_row_roi).name,date,'.csv'];
 filename = [filename{1},filename{2},filename{3},filename{4}] ;
 csvwrite(filename , newData);
 msgbox('File exported !!');
-msgbox
+
 
 
 
@@ -624,21 +627,23 @@ filename = [folder_name,'/',name,'.mat' ];
 valueSlider  = get(handles.slider, 'Value');
 valueSlider = round(valueSlider);
 videoObject = handles.videoObject;
+nbFrames = handles.nbFrames;
 zoom = handles.Zoom;
 dataRoiTable=get(handles.ROI,'Data');
 dataEventsTable=get(handles.uitable8,'Data');
 dataHistoryTable=get(handles.uitable1,'Data');
-save(filename,'allData', 'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable');
+save(filename,'allData', 'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable','nbFrames');
 
 function open_Callback(hObject, eventdata, handles)
 [ file_name,folder_name ] = uigetfile({'*.*'},'Select your file ')
 path_file = [folder_name,file_name];
 path_file
-loadMatFile = load(path_file,'allData',  'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable');
+loadMatFile = load(path_file,'allData',  'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable' ,'nbFrames');
 handles.openProject = 'yes';
 videoPath = [loadMatFile.videoObject.Path, '/' , loadMatFile.videoObject.Name];
 handles.videoPathSaved =videoPath;
 handles.Zoom = loadMatFile.zoom;
+handles.nbFrames = loadMatFile.nbFrames;
 handles.allData = loadMatFile.allData;
 videoObject = VideoReader(videoPath);
 handles.videoObject = videoObject;
@@ -659,3 +664,58 @@ set(handles.uitable1, 'Data',loadMatFile.dataHistoryTable);
 function new_Callback(hObject, eventdata, handles)
 close(gcbf);
 myTool;
+
+
+% --- Executes when selected cell(s) is changed in uitable8.
+function uitable8_CellSelectionCallback(hObject, eventdata, handles)
+row = eventdata.Indices;
+selected_row_event = row(1);
+handles.selected_row_event =selected_row_event;
+
+
+
+selected_row_roi  = handles.selected_row_roi ;
+guidata(hObject,handles);
+
+set_table_event(hObject, eventdata, handles,selected_row_roi,selected_row_event);
+
+function set_table_event(hObject, eventdata, handles,selected_row_roi,selected_row_event)
+
+set(handles.events ,'visible','on');
+set(handles.eventTxt ,'visible','on');
+
+nbFrames = handles.nbFrames ;
+images =[1:nbFrames];
+images = transpose(images);
+allData = handles.allData;
+
+nameROI = allData(selected_row_roi).name;
+nameEvent = allData(selected_row_roi).events{selected_row_event}{1};
+dataEvent = [images allData(selected_row_roi).events{selected_row_event}{3}];
+
+indices = find(dataEvent(:,2)==0);
+dataEvent(indices,:) = [];
+
+
+set(handles.events, 'Data', dataEvent);
+set(handles.eventTxt, 'String', nameEvent);
+
+
+% --- Executes when selected cell(s) is changed in events.
+function events_CellSelectionCallback(hObject, eventdata, handles)
+% hObject    handle to events (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.TABLE)
+%	Indices: row and column indices of the cell(s) currently selecteds
+% handles    structure with handles and user data (see GUIDATA)
+indice = eventdata.Indices;
+indice = indice(1);
+
+selected_row_roi  = handles.selected_row_roi ;
+
+selected_row_event = handles.selected_row_event;
+% % 
+images=get(handles.events,'Data');
+image = images(indice);
+set(handles.slider,'Value', image); 
+guidata(hObject,handles);
+slider_Callback(hObject, eventdata, handles);
