@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 26-Nov-2015 16:11:28
+% Last Modified by GUIDE v2.5 04-Dec-2015 17:11:24
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,6 +58,7 @@ handles.number = 0;
 handles.allData= struct;
 handles.pause = 0.0;
 handles.openProject = 'no';
+handles.contrastSlider = 0.0;
 % Update handles structure
 guidata(hObject, handles);
 
@@ -104,7 +105,7 @@ if(strcmp(get(handles.start,'String'),'Start'))
     set(handles.start,'String','Pause');
     for k=value:nbFrames
         img=read(handles.videoObject,k);
-        img = imadjust(rgb2gray(img)) ;
+        img = imadjust(img, stretchlim(img, handles.contrastSlider), [0 1]);
         img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
 
         axes(handles.axes1);
@@ -134,7 +135,7 @@ videoObject = handles.videoObject;
 value  = get(handles.slider, 'Value');
 
 img=read(videoObject,value);
-img = imadjust(rgb2gray(img));
+img = imadjust(img, stretchlim(img, handles.contrastSlider), [0 1]);
 
 axes(handles.axes1);
 
@@ -194,10 +195,10 @@ set(handles.path,'String',input_video_file);
 % Acquiring video
 videoObject = VideoReader(input_video_file);
 % Display first frame
-frame_1 = read(videoObject,1);
- frame_1 = imadjust(rgb2gray(frame_1)) ;
+img = read(videoObject,1);
+ img = imadjust(img, stretchlim(img, handles.contrastSlider), [0 1]);
 axes(handles.axes1);
-imshow(frame_1);
+imshow(img);
 drawnow;
 set(hObject, 'Enable', 'on')
 axis(handles.axes1,'off');
@@ -313,12 +314,12 @@ function first_Callback(hObject, eventdata, handles)
 ax=handles.Zoom;
 set(handles.slider,'Value', 1); 
 set(handles.nbFrame, 'String',1);
-frame_1 = read(handles.videoObject,1);
-frame_1 = imadjust(rgb2gray(frame_1)) ;
+img = read(handles.videoObject,1);
+img = imadjust(img, stretchlim(img, handles.contrastSlider), [0 1]);
 
-frame_1= imcrop(frame_1, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
+img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
 axes(handles.axes1);
-imshow(frame_1);
+imshow(img);
 drawnow;
 
 
@@ -330,11 +331,11 @@ function last_Callback(hObject, eventdata, handles)
 ax=handles.Zoom;
 set(handles.slider,'Value', inf); 
 set(handles.nbFrame, 'String',inf);
-frame_inf = read(handles.videoObject,inf);
-frame_inf = imadjust(rgb2gray(frame_inf)) ;
-frame_inf= imcrop(frame_inf, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
+img = read(handles.videoObject,inf);
+img = imadjust(img, stretchlim(img, handles.contrastSlider), [0 1]);
+img= imcrop(img, [ax(1),ax(3),ax(2)-ax(1),ax(4)-ax(3)]);
 axes(handles.axes1);
-imshow(frame_inf);
+imshow(img);
 drawnow;
 
 
@@ -402,7 +403,7 @@ valueSlider  = get(handles.slider, 'Value');
 
 
 % --------------------------------------------------------------------
-function uitoggletool1_OnCallback(hObject, eventdata, handles)
+function zoomTool_OnCallback(hObject, eventdata, handles)
 handles.Zoom = zoom;
 set(handles.Zoom,'ActionPostCallback',{@mouseFcn,handles});
 guidata(hObject,handles);
@@ -718,4 +719,36 @@ images=get(handles.events,'Data');
 image = images(indice);
 set(handles.slider,'Value', image); 
 guidata(hObject,handles);
+slider_Callback(hObject, eventdata, handles);
+
+
+% --------------------------------------------------------------------
+function contrast_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to contrast (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% hObject    handle to contrastSlider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+state = get(handles.textContrast,'Visible');
+if(strcmp(state, 'off'))
+    set(handles.textContrast,'Visible','on');
+    set(handles. sliderContrast,'Visible', 'on'); 
+else
+    set(handles.textContrast,'Visible','off');
+    set(handles. sliderContrast,'Visible', 'off'); 
+end
+
+
+% --- Executes on slider movement.
+function sliderContrast_Callback(hObject, eventdata, handles)
+% hObject    handle to sliderContrast (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+T =[get(hObject, 'Value'), 1];
+handles.contrastSlider = T;
+guidata(hObject, handles);
 slider_Callback(hObject, eventdata, handles);
