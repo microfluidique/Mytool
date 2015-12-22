@@ -22,7 +22,7 @@ function varargout = myTool(varargin)
 
 % Edit the above text to modifunction myfy the response to help myTool
 
-% Last Modified by GUIDE v2.5 04-Dec-2015 17:11:24
+% Last Modified by GUIDE v2.5 09-Dec-2015 17:14:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -65,11 +65,7 @@ guidata(hObject, handles);
 % UIWAIT makes myTool wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-
-
 img = imread('tv.jpg');
-
-
 axes(handles.axes1);
 imshow(img);
 drawnow;
@@ -359,15 +355,15 @@ for k=1:nbEvents
     end
 end
 
-valueSlider  = get(handles.slider, 'Value');
-
- switch(eventdata.Key)
-    case 'rightarrow'
-    right_Callback(hObject, eventdata, handles);
-        
-    case 'leftarrow'
-     left_Callback(hObject, eventdata, handles);
- end
+% valueSlider  = get(handles.slider, 'Value');
+% 
+%  switch(eventdata.Key)
+%     case 'rightarrow'
+%     right_Callback(hObject, eventdata, handles);
+%         
+%     case 'leftarrow'
+%      left_Callback(hObject, eventdata, handles);
+%  end
 
 
 
@@ -441,7 +437,10 @@ end
 
 % -------------------------------------------------------------------
 function uipushtool3_ClickedCallback(hObject, eventdata, handles)
+
+handles.originalZoom
 handles.Zoom = handles.originalZoom;
+
 guidata(hObject,handles);
 slider_Callback(hObject, eventdata, handles);   
 
@@ -630,22 +629,24 @@ valueSlider = round(valueSlider);
 videoObject = handles.videoObject;
 nbFrames = handles.nbFrames;
 zoom = handles.Zoom;
+originalZoom = handles.originalZoom;
 dataRoiTable=get(handles.ROI,'Data');
 dataEventsTable=get(handles.uitable8,'Data');
 dataHistoryTable=get(handles.uitable1,'Data');
-save(filename,'allData', 'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable','nbFrames');
+save(filename,'allData', 'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable','nbFrames' ,'originalZoom');
 
 function open_Callback(hObject, eventdata, handles)
 [ file_name,folder_name ] = uigetfile({'*.*'},'Select your file ')
 path_file = [folder_name,file_name];
-path_file
-loadMatFile = load(path_file,'allData',  'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable' ,'nbFrames');
+
+loadMatFile = load(path_file,'allData',  'valueSlider' , 'videoObject', 'zoom','dataRoiTable', 'dataEventsTable','dataHistoryTable' ,'nbFrames', 'originalZoom');
 handles.openProject = 'yes';
 videoPath = [loadMatFile.videoObject.Path, '/' , loadMatFile.videoObject.Name];
 handles.videoPathSaved =videoPath;
 handles.Zoom = loadMatFile.zoom;
 handles.nbFrames = loadMatFile.nbFrames;
 handles.allData = loadMatFile.allData;
+handles.originalZoom = loadMatFile.originalZoom;
 videoObject = VideoReader(videoPath);
 handles.videoObject = videoObject;
 guidata(hObject,handles);
@@ -752,3 +753,11 @@ T =[get(hObject, 'Value'), 1];
 handles.contrastSlider = T;
 guidata(hObject, handles);
 slider_Callback(hObject, eventdata, handles);
+
+
+% --------------------------------------------------------------------
+function convert_Callback(hObject, eventdata, handles)
+% hObject    handle to convert (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+convertTrack;
